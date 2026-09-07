@@ -1,0 +1,16 @@
+name: Check
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libglib2.0-bin
+      - run: bash scripts/package.sh
+      - run: unzip -t dist/gnome-agent-pulse.shell-extension.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agent-pulse-gnome-extension
+          path: dist/gnome-agent-pulse.shell-extension.zip

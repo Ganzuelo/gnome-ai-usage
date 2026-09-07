@@ -1,0 +1,23 @@
+/* Flush with neighbouring indicators: the panel's own hpadding is dropped. */
+.au-panel-button, .panel-button.au-panel-button { -natural-hpadding: 0px; -minimum-hpadding: 0px; }
+.au-panel-box { spacing: 6px; }
+/* Filled silhouette: a touch larger than the 16px symbolic icons beside it. */
+.au-panel-box .system-status-icon { icon-size: 18px; }
+.au-popup { min-width: 340px; }
+.au-heading { padding: 10px 16px 12px; }
+.au-title { font-weight: bold; }
+.au-row { spacing: 12px; }
+.au-tabs { margin: 0 16px; padding: 4px; spacing: 4px; background-color: rgba(128,128,128,0.18); border-radius: 12px; }
+.au-tab { padding: 8px 12px; border-radius: 9px; color: inherit; }
+.au-tab:hover, .au-action:hover { background-color: rgba(128,128,128,0.16); }
+.au-tab.au-selected { background-color: rgba(128,128,128,0.32); box-shadow: 0 1px 3px rgba(0,0,0,0.15); font-weight: bold; }
+.au-tab:focus, .au-action:focus { box-shadow: inset 0 0 0 2px #a88bdf; }
+.au-content { padding: 22px; spacing: 8px; }
+.au-muted { color: inherit; opacity: 0.7; font-size: 0.9em; }
+.au-bucket { padding-top: 14px; font-weight: bold; }
+.au-meter { padding-top: 16px; spacing: 10px; }
+.au-track { background-color: rgba(128,128,128,0.2); border-radius: 8px; }
+.au-fill { background-color: #b79be9; border-radius: 8px; }
+.au-warning { background-color: #eda56b; }
+.au-footer { padding: 10px 16px 4px; border-top: 1px solid rgba(128,128,128,0.18); }
+.au-action { padding: 8px; border-radius: 8px; }
