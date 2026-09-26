@@ -13,10 +13,11 @@ Agent Pulse was inspired by the idea behind [Omarchy's Agents panel](https://git
 First development release targeting GNOME Shell 50. Verified in an isolated
 GNOME Shell 50.1 session: native popup rendering, live Codex quotas, tab
 switching, stale-state retention, and disable cleanup. Preferences construction
-also passed a native libadwaita smoke test. Eighteen automated Python tests pass.
+also passed a native libadwaita smoke test. Twenty-nine automated Python tests pass.
 Codex reads real usage through the installed Codex CLI. Claude reads real plan
 limits from Claude Code's status line, falling back to the Claude desktop app's
-own usage samples. Neither provider displays sample or fabricated usage: an
+own usage samples. Cursor reads plan percentages with the active Cursor app
+session. No provider displays sample or fabricated usage: an
 agent with no readable source stays **not connected**.
 
 ## Requirements and installation
@@ -25,6 +26,8 @@ agent with no readable source stays **not connected**.
 - Codex: Codex CLI signed in to a ChatGPT account.
 - Claude: Claude Code (terminal or desktop app) signed in to a Claude account,
   plus the one-line status line setting below.
+- Cursor: Cursor signed in through the desktop app. Its personal-usage endpoint
+  is not a stable, documented third-party API; see the Cursor section below.
 - No Node, Homebrew, API key, browser-cookie importer, or background service.
 
 ```sh
@@ -42,7 +45,8 @@ gnome-extensions prefs agent-pulse@community
 
 Settings include name, optional top-bar percentage, refresh interval, enabled
 agents, tab order, default tab, an optional absolute Codex executable path, and
-the Claude status line command with an optional snapshot path.
+the Claude status line command with an optional snapshot path. Cursor also has
+an optional state-database path for nonstandard installations.
 
 ### Connecting Claude
 
@@ -90,7 +94,23 @@ windows: no prompt, transcript path, project path, cost, or account identifier i
 stored, and the snapshot is written `0600` through an atomic replace. A malformed
 or missing payload leaves the status line empty rather than breaking the session.
 
-The widget does not directly read or write login tokens. Raw RPC output is
+### Cursor
+
+Each poll opens Cursor's local `state.vscdb` read-only, selects only the
+`cursorAuth/accessToken` value, and sends it as a bearer token to the fixed
+`https://api2.cursor.sh` usage origin. Agent Pulse never saves, displays, logs,
+or returns that token. The primary response supplies total monthly usage plus
+separate Cursor Models and Other Models percentages; a request-count response
+is supported as a fallback for older and enterprise plan shapes.
+
+Cursor documents the dashboard values and monthly reset behavior, but does not
+publish the personal endpoint as a stable third-party API. Cursor may change the
+route, authentication storage, or response shape. Such a change leaves the last
+good snapshot marked stale rather than guessing or showing zero. This adapter
+does not refresh or alter Cursor credentials; opening Cursor and signing in
+again is the recovery path for an expired session.
+
+The widget does not write login tokens. Raw provider output is
 normalized before leaving the helper; no raw server logs are displayed. Quota
 snapshots stay in memory and disappear when the extension is disabled.
 On a failed poll the last successful data remains visible and is marked stale.
@@ -116,13 +136,14 @@ bash scripts/package.sh
 - `providers/codex_usage.py`: bounded read-only RPC and normalization.
 - `providers/claude_usage.py`: bounded read-only snapshot reader and normalization.
 - `providers/claude_statusline.py`: status line writer that records only quota numbers.
+- `providers/cursor_usage.py`: read-only Cursor session lookup, bounded HTTPS request, and normalization.
 - `schemas/`: extension-owned preferences.
 
 To add a provider, add its registry entry and independent adapter, normalize its
 response to `{buckets: [{id, name, windows: [{used, minutes, reset, slot}]}], updated}`,
 and add provider dispatch in `readProvider`. The controller already keeps
 per-provider snapshots, errors, and in-flight jobs. Never substitute token counts
-or API spend for subscription quota — Claude's usage credits and spend limits are
+or API spend for subscription quota — non-quota credits and spend totals are
 deliberately dropped for that reason. Keep unavailable, stale, and disconnected
 states explicit.
 

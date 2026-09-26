@@ -8,7 +8,17 @@ import {PROVIDERS} from './providers/index.js';
 const SUBTITLES = {
     codex: 'Read subscription limits through Codex CLI',
     claude: 'Read plan limits from Claude Code\u2019s status line',
+    cursor: 'Read monthly plan limits from the signed-in Cursor app',
 };
+
+const ORDERS = [
+    ['codex', 'claude', 'cursor'],
+    ['codex', 'cursor', 'claude'],
+    ['claude', 'codex', 'cursor'],
+    ['claude', 'cursor', 'codex'],
+    ['cursor', 'codex', 'claude'],
+    ['cursor', 'claude', 'codex'],
+];
 
 export default class AgentUsagePreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
@@ -38,10 +48,12 @@ export default class AgentUsagePreferences extends ExtensionPreferences {
             });
             agents.add(toggle);
         }
-        const order = new Adw.ComboRow({title: 'Tab order', model: Gtk.StringList.new(['Codex, Claude', 'Claude, Codex']), selected: settings.get_strv('providers')[0] === 'claude' ? 1 : 0});
+        const currentOrder = settings.get_strv('providers');
+        const completeOrder = [...currentOrder, ...PROVIDERS.map(p => p.id).filter(id => !currentOrder.includes(id))];
+        const order = new Adw.ComboRow({title: 'Tab order', model: Gtk.StringList.new(ORDERS.map(ids => ids.map(id => PROVIDERS.find(p => p.id === id).name).join(', '))), selected: Math.max(0, ORDERS.findIndex(ids => ids.every((id, index) => completeOrder[index] === id)))});
         order.connect('notify::selected', () => {
             const enabled = settings.get_strv('providers');
-            settings.set_strv('providers', (order.selected ? ['claude', 'codex'] : ['codex', 'claude']).filter(id => enabled.includes(id)));
+            settings.set_strv('providers', ORDERS[order.selected].filter(id => enabled.includes(id)));
         });
         agents.add(order);
         const initial = new Adw.ComboRow({title: 'Default tab', subtitle: 'Falls back to the first enabled agent', model: Gtk.StringList.new(PROVIDERS.map(p => p.name)), selected: Math.max(0, PROVIDERS.findIndex(p => p.id === settings.get_string('default-provider')))});
@@ -69,5 +81,10 @@ export default class AgentUsagePreferences extends ExtensionPreferences {
         const snapshot = new Adw.EntryRow({title: 'Claude snapshot path (blank = default)'});
         settings.bind('claude-snapshot-path', snapshot, 'text', Gio.SettingsBindFlags.DEFAULT);
         claude.add(snapshot);
+        const cursor = new Adw.PreferencesGroup({title: 'Cursor connection', description: 'Uses the active Cursor app sign-in to request plan percentages from Cursor. The local access token is read only for the request and is never stored by Agent Pulse or shown in its output. Cursor does not publish this personal-usage endpoint as a stable third-party API, so a Cursor update may temporarily break this adapter.'});
+        page.add(cursor);
+        const cursorState = new Adw.EntryRow({title: 'Cursor state database (blank = default)'});
+        settings.bind('cursor-state-path', cursorState, 'text', Gio.SettingsBindFlags.DEFAULT);
+        cursor.add(cursorState);
     }
 }
