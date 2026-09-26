@@ -4,11 +4,13 @@ import GLib from 'gi://GLib';
 export const PROVIDERS = [
     {id: 'codex', name: 'Codex', supported: true},
     {id: 'claude', name: 'Claude', supported: true},
+    {id: 'cursor', name: 'Cursor', supported: true},
 ];
 
 const FAILURES = {
     codex: 'Usage unavailable. Check Codex login, path, and connection.',
     claude: 'Usage unavailable. Add the Claude status line hook, then run Claude Code once.',
+    cursor: 'Usage unavailable. Sign in to the Cursor app, then try again.',
 };
 
 function run(argv, failure) {
@@ -43,10 +45,15 @@ export function readClaude(path, snapshot) {
     return run(['python3', `${path}/providers/claude_usage.py`, '--snapshot', snapshot], FAILURES.claude);
 }
 
+export function readCursor(path, state) {
+    return run(['python3', `${path}/providers/cursor_usage.py`, '--state-db', state], FAILURES.cursor);
+}
+
 // Each provider owns an independent adapter; the controller only dispatches.
 export function readProvider(id, path, settings) {
     if (id === 'codex') return readCodex(path, settings.get_string('codex-path'));
     if (id === 'claude') return readClaude(path, settings.get_string('claude-snapshot-path'));
+    if (id === 'cursor') return readCursor(path, settings.get_string('cursor-state-path'));
     return null;
 }
 

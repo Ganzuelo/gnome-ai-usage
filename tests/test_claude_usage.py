@@ -85,6 +85,12 @@ class SourceTests(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 usage.read_usage(api_key, missing)
 
+    def test_desktop_history_covers_an_unavailable_snapshot(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            snapshot = write(Path(tmp) / 'claude.json', {'captured': 2000, 'available': False, 'rate_limits': None})
+            history = write(Path(tmp) / 'history.json', {'samples': [{'t': 900_000, 'u': {'fh': 44, 'sd': 5}}]})
+            self.assertEqual(usage.read_usage(snapshot, history)['source'], 'desktop')
+
     def test_helper_reports_a_generic_failure(self):
         with tempfile.TemporaryDirectory() as tmp:
             done = subprocess.run([sys.executable, str(ROOT / 'providers/claude_usage.py'),
@@ -120,6 +126,15 @@ class StatusLineTests(unittest.TestCase):
     def test_api_key_sessions_record_that_limits_do_not_apply(self):
         _, stored, _ = self.run_writer({'rate_limits_available': False, 'rate_limits': None})
         self.assertEqual((stored['available'], stored['rate_limits']), (False, None))
+
+    def test_a_session_before_its_first_reply_keeps_the_last_snapshot(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            snapshot = write(Path(tmp) / 'claude.json', {'captured': 2000, 'available': True,
+                                                         'rate_limits': {'five_hour': {'used_percentage': 30, 'resets_at': 9}}})
+            before = snapshot.read_text()
+            done = subprocess.run([sys.executable, str(WRITER), '--snapshot', str(snapshot)],
+                                  input=json.dumps({'session_id': 'new'}), capture_output=True, text=True)
+            self.assertEqual((done.returncode, snapshot.read_text()), (0, before))
 
     def test_broken_input_never_breaks_the_status_line(self):
         done, stored, _ = self.run_writer('not json at all', text=True)

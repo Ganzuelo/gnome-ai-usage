@@ -3,9 +3,10 @@
   <key name="widget-name" type="s"><default>'Agent Pulse'</default><summary>Widget name</summary></key>
   <key name="show-percentage" type="b"><default>false</default><summary>Show active provider percentage</summary></key>
   <key name="refresh-seconds" type="i"><default>300</default><range min="60" max="3600"/><summary>Refresh interval</summary></key>
-  <key name="providers" type="as"><default>['codex','claude']</default><summary>Enabled providers in tab order</summary></key>
+  <key name="providers" type="as"><default>['codex','claude','cursor']</default><summary>Enabled providers in tab order</summary></key>
   <key name="default-provider" type="s"><default>'codex'</default><summary>Initially selected provider</summary></key>
   <key name="codex-path" type="s"><default>''</default><summary>Optional absolute Codex executable path</summary></key>
   <key name="claude-snapshot-path" type="s"><default>''</default><summary>Optional absolute Claude usage snapshot path</summary></key>
+  <key name="cursor-state-path" type="s"><default>''</default><summary>Optional absolute Cursor state database path</summary></key>
  </schema>
 </schemalist>

@@ -1,9 +1,9 @@
 {
   "uuid": "agent-pulse@community",
   "name": "Agent Pulse",
-  "description": "Monitor Codex and Claude subscription usage from the GNOME top bar.",
+  "description": "Monitor Codex, Claude, and Cursor subscription usage from the GNOME top bar.",
   "shell-version": ["50"],
-  "version": 2,
+  "version": 3,
   "settings-schema": "org.gnome.shell.extensions.agent-pulse",
   "url": "https://github.com/Ganzuelo/gnome-ai-usage"
 }

@@ -11,6 +11,7 @@ import {PROVIDERS, PROVIDER_FAILURE, readProvider} from './providers/index.js';
 const EMPTY = {
     codex: {title: 'Usage unavailable', hint: 'Sign in with Codex CLI to read limits.', reading: 'Reading Codex usage…'},
     claude: {title: 'Not connected', hint: 'Add the status line hook in Settings, then run Claude Code once.', reading: 'Reading Claude usage…'},
+    cursor: {title: 'Not connected', hint: 'Sign in to the Cursor app to read plan usage.', reading: 'Reading Cursor usage…'},
 };
 
 function label(text, style = '') {
@@ -36,6 +37,7 @@ function resetText(timestamp) {
 function windowName(window) {
     if (window.minutes === 10080) return 'Weekly';
     if (window.minutes === 300) return 'Session · 5 hours';
+    if (window.minutes >= 40320) return 'Monthly';
     if (window.minutes) return `${window.minutes < 60 ? `${window.minutes} minutes` : `${Math.round(window.minutes / 60 * 10) / 10} hours`}`;
     return window.slot === 'primary' ? 'Primary limit' : 'Secondary limit';
 }
@@ -65,6 +67,7 @@ export default class AgentPulse extends Extension {
             if (key === 'providers') this._refreshAll();
             if (key === 'codex-path') this._restart('codex');
             if (key === 'claude-snapshot-path') this._restart('claude');
+            if (key === 'cursor-state-path') this._restart('cursor');
         }, this);
         this._button.menu.connect('open-state-changed', (_menu, open) => {
             if (open) this._render();

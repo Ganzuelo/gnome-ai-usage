@@ -73,11 +73,15 @@ def main():
         if not isinstance(session, dict):
             raise ValueError('Unexpected status line input.')
         limits = session.get('rate_limits')
-        store(snapshot_path(args.snapshot), {
-            'captured': int(time.time()),
-            'available': session.get('rate_limits_available', limits is not None),
-            'rate_limits': limits if isinstance(limits, dict) else None,
-        })
+        available = session.get('rate_limits_available', True) is not False
+        # Before a session's first reply there are no limits yet, and nothing says they
+        # do not apply; keep the last good snapshot rather than overwrite it with nothing.
+        if isinstance(limits, dict) or not available:
+            store(snapshot_path(args.snapshot), {
+                'captured': int(time.time()),
+                'available': available,
+                'rate_limits': limits if isinstance(limits, dict) else None,
+            })
     except (ValueError, UnicodeError, OSError):
         pass  # A status line must never break the session it renders in.
     if args.wrap:

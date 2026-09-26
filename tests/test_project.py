@@ -23,6 +23,15 @@ class ProjectTests(unittest.TestCase):
         metadata = (ROOT / 'metadata.json').read_text().lower()
         self.assertNotIn('@local', metadata)
 
+    def test_cursor_is_wired_through_registry_and_schema(self):
+        registry = (ROOT / 'providers' / 'index.js').read_text()
+        preferences = (ROOT / 'prefs.js').read_text()
+        schema = (ROOT / 'schemas' / 'org.gnome.shell.extensions.agent-pulse.gschema.xml').read_text()
+        self.assertIn("{id: 'cursor', name: 'Cursor', supported: true}", registry)
+        self.assertIn("if (id === 'cursor')", registry)
+        self.assertIn('Cursor connection', preferences)
+        self.assertIn('cursor-state-path', schema)
+
 
 if __name__ == '__main__':
     unittest.main()

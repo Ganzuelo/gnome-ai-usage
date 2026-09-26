@@ -122,7 +122,7 @@ def read_snapshot(path):
     if captured is None:
         return None
     if payload.get('available') is False:
-        raise RuntimeError('Plan rate limits do not apply to this Claude session.')
+        return None  # Let the desktop history fallback answer instead.
     return normalize(payload.get('rate_limits'), captured, 'statusline')
 
 

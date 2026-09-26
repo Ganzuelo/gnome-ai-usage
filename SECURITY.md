@@ -1,6 +1,6 @@
 # Scope and reporting
 
-Do not include tokens, auth files, complete Codex logs, status line payloads, or
+Do not include tokens, auth files, complete provider logs, status line payloads, or
 conversation data in bug reports. The usage helpers emit only normalized quota
 data or a generic failure message. Report the GNOME version, extension version, and visible status.
 
@@ -12,4 +12,12 @@ snapshot written by its own status line hook and, as a fallback, the Claude
 desktop app's plan usage samples. The status line hook copies out rate limit
 windows only and discards the rest of the payload it is handed, including
 prompts, transcript and project paths, cost, and account identifiers. Codex and
-Claude themselves may refresh credentials and write runtime files. No extension can enforce a sandbox within GNOME Shell.
+Claude themselves may refresh credentials and write runtime files.
+
+For Cursor, Agent Pulse opens Cursor's local state database read-only, selects
+only `cursorAuth/accessToken`, and sends it only to the hard-coded
+`https://api2.cursor.sh` HTTPS origin. The helper does not print, log, return,
+cache, refresh, or modify the token. Cursor's personal usage endpoint is not a
+stable documented third-party API, so the adapter is isolated and fails closed
+when its response is unusable. No extension can enforce a sandbox within GNOME
+Shell.
